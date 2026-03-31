@@ -26,7 +26,7 @@ export default auth((req) => {
   }
 
   // Finance + Admin only
-  if (pathname.startsWith("/approvals")) {
+  if (pathname.startsWith("/approvals") || pathname.startsWith("/approved")) {
     if (role !== "ADMIN" && role !== "FINANCE") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }

@@ -10,6 +10,8 @@ const createTemplateSchema = z.object({
   description: z.string().optional(),
   defaultTerms: z.array(z.string()).default([]),
   defaultSections: z.any().optional(),
+  visibility: z.enum(["ALL", "SPECIFIC"]).default("ALL"),
+  visibleUserIds: z.array(z.string()).default([]),
 });
 
 // GET /api/templates
@@ -17,12 +19,27 @@ export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "未授權" }, { status: 401 });
 
-  const templates = await prisma.quotationType.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  let templates;
+  if (session.user.role === "ADMIN" || session.user.role === "FINANCE") {
+    // Admin/Finance see all templates
+    templates = await prisma.quotationType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } else {
+    // Sales only see ALL templates + templates they're assigned to
+    templates = await prisma.quotationType.findMany({
+      where: {
+        active: true,
+        OR: [
+          { visibility: "ALL" },
+          { visibleToUsers: { some: { userId: session.user.id } } },
+        ],
+      },
+      orderBy: { sortOrder: "asc" },
+    });
+  }
 
-  // Parse JSON strings back to arrays
   const parsed = templates.map((t) => ({
     ...t,
     defaultTerms: fromJsonString(t.defaultTerms),
@@ -51,9 +68,11 @@ export async function POST(req: NextRequest) {
       code: parsed.data.code,
       description: parsed.data.description,
       defaultTerms: JSON.stringify(parsed.data.defaultTerms),
-      defaultSections: parsed.data.defaultSections
-        ? JSON.stringify(parsed.data.defaultSections)
-        : null,
+      defaultSections: parsed.data.defaultSections ? JSON.stringify(parsed.data.defaultSections) : null,
+      visibility: parsed.data.visibility,
+      visibleToUsers: parsed.data.visibility === "SPECIFIC" && parsed.data.visibleUserIds.length > 0
+        ? { create: parsed.data.visibleUserIds.map((userId) => ({ userId })) }
+        : undefined,
     },
   });
 

@@ -63,6 +63,8 @@ export async function GET(
       })),
     })),
     salesName: quotation.createdBy.name,
+    stampTextA: quotation.stampTextA,
+    stampTextB: quotation.stampTextB,
   });
 
   const printHtml = html.replace(

@@ -39,6 +39,8 @@ interface PdfQuotation {
   services: PdfService[];
   salesName?: string;
   salesPhone?: string;
+  stampTextA?: string;
+  stampTextB?: string;
 }
 
 export function renderQuotationHtml(data: PdfQuotation): string {
@@ -223,8 +225,8 @@ export function renderQuotationHtml(data: PdfQuotation): string {
   .sig-box {
     flex: 1;
     border: 1px solid #ddd;
-    padding: 12px;
-    min-height: 80px;
+    padding: 15px 20px;
+    min-height: 100px;
   }
   .sig-box .sig-title {
     font-size: 10px;
@@ -232,9 +234,10 @@ export function renderQuotationHtml(data: PdfQuotation): string {
     margin-bottom: 40px;
   }
   .sig-box .sig-stamp {
-    font-size: 9px;
-    color: #888;
+    font-size: 10px;
+    color: #666;
     text-align: center;
+    margin-top: 10px;
   }
 
   /* Footer */
@@ -378,11 +381,11 @@ export function renderQuotationHtml(data: PdfQuotation): string {
   <div class="signature-area">
     <div class="sig-box">
       <div class="sig-title">甲方：客戶簽核</div>
-      <div class="sig-stamp">發票章用印</div>
+      <div class="sig-stamp">${data.stampTextA || "發票章用印"}</div>
     </div>
     <div class="sig-box">
       <div class="sig-title">乙方：全偲行銷簽核</div>
-      <div class="sig-stamp">發票章用印</div>
+      <div class="sig-stamp">${data.stampTextB || "發票章用印"}</div>
     </div>
   </div>
 

@@ -42,6 +42,12 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       roles: ["ADMIN", "FINANCE"] as Role[],
     },
     {
+      label: "已核准",
+      href: "/approved",
+      icon: CheckCircle,
+      roles: ["ADMIN", "FINANCE"] as Role[],
+    },
+    {
       label: "版型管理",
       href: "/templates",
       icon: Settings,

@@ -53,6 +53,7 @@ interface Quotation {
       unit: string;
       unitPrice: number;
       amount: number;
+      isCustom: boolean;
     }[];
   }[];
   approvals: {
@@ -335,7 +336,8 @@ export default function QuotationDetailPage() {
               </thead>
               <tbody>
                 {service.items.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-100">
+                  <tr key={item.id} className={`border-b border-gray-100 ${item.isCustom && quotation.status === "PENDING_APPROVAL" ? "bg-amber-50" : ""}`}
+                    title={item.isCustom && quotation.status === "PENDING_APPROVAL" ? "業務新增項目" : ""}>
                     <td className="px-2 py-2 text-sm text-gray-500">
                       {item.itemNumber}
                     </td>
