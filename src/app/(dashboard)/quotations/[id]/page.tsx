@@ -11,6 +11,7 @@ import {
   XCircle,
   Download,
   Clock,
+  Trash2,
 } from "lucide-react";
 import { STATUS_LABELS, STATUS_COLORS, ROLE_LABELS } from "@/lib/constants";
 import { formatNumber, formatDate } from "@/lib/utils";
@@ -114,6 +115,13 @@ export default function QuotationDetailPage() {
     setActionLoading(false);
   }
 
+  async function handleDelete() {
+    if (!confirm("確定要刪除此報價單？此操作無法復原。")) return;
+    setActionLoading(true);
+    await fetch(`/api/quotations/${params.id}`, { method: "DELETE" });
+    router.push("/quotations");
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-gray-500">
@@ -157,7 +165,7 @@ export default function QuotationDetailPage() {
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-blue-600">
                 {quotation.quotationNumber}
               </h1>
               <span
@@ -225,6 +233,16 @@ export default function QuotationDetailPage() {
               <Download className="h-4 w-4" />
               匯出 PDF
             </a>
+          )}
+          {canEdit && (
+            <button
+              onClick={handleDelete}
+              disabled={actionLoading}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              刪除
+            </button>
           )}
         </div>
       </div>
@@ -336,7 +354,7 @@ export default function QuotationDetailPage() {
               </thead>
               <tbody>
                 {service.items.map((item) => (
-                  <tr key={item.id} className={`border-b border-gray-100 ${item.isCustom && quotation.status === "PENDING_APPROVAL" ? "bg-amber-50" : ""}`}
+                  <tr key={item.id} className={`border-b border-gray-100 ${item.isCustom && quotation.status === "PENDING_APPROVAL" ? "bg-blue-50" : ""}`}
                     title={item.isCustom && quotation.status === "PENDING_APPROVAL" ? "業務新增項目" : ""}>
                     <td className="px-2 py-2 text-sm text-gray-500">
                       {item.itemNumber}

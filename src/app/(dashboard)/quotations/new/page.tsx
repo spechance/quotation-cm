@@ -50,6 +50,7 @@ export default function NewQuotationPage() {
   const [companyTaxId, setCompanyTaxId] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [referrer, setReferrer] = useState("");
 
   // Auto from template (hidden, not editable in this page)
   const [stampTextA, setStampTextA] = useState("發票章用印");
@@ -184,7 +185,7 @@ export default function NewQuotationPage() {
       projectName, companyName, contactAddress, primaryContact,
       projectPeriod: formatDateRange(periodStart, periodEnd),
       periodStart: periodStart || undefined, periodEnd: periodEnd || undefined,
-      companyTaxId, companyPhone, contactPhone,
+      companyTaxId, companyPhone, contactPhone, referrer,
       stampTextA, stampTextB, generalTerms,
       services: services.map((s, idx) => ({
         quotationTypeId: s.quotationTypeId,
@@ -245,6 +246,7 @@ export default function NewQuotationPage() {
           <div><label className="block text-sm font-medium text-gray-700">公司電話</label><input value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" /></div>
           <div><label className="block text-sm font-medium text-gray-700">主要窗口 <span className="text-red-500">*</span></label><input value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" /></div>
           <div><label className="block text-sm font-medium text-gray-700">窗口電話</label><input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" /></div>
+          <div><label className="block text-sm font-medium text-gray-700">引薦廠商 <span className="text-xs text-gray-400">（選填）</span></label><input value={referrer} onChange={(e) => setReferrer(e.target.value)} placeholder="如有引薦廠商請填寫" className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" /></div>
         </div>
       </div>
 
@@ -326,7 +328,7 @@ export default function NewQuotationPage() {
                       {service.items.map((item, iIdx) => {
                         const isTemplate = !item.isCustom;
                         return (
-                          <tr key={iIdx} className={`border-b border-gray-100 ${item.isCustom ? "bg-amber-50" : ""}`}>
+                          <tr key={iIdx} className={`border-b border-gray-100 ${item.isCustom ? "bg-blue-50" : ""}`}>
                             <td className="px-2 py-2 text-sm text-gray-500">{item.itemNumber}</td>
                             <td className="px-2 py-2">
                               {isTemplate

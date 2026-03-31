@@ -55,7 +55,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       roles: ["ADMIN", "FINANCE"] as Role[],
     },
     {
-      label: "報價單版型管理",
+      label: "報價單管理",
       href: "/templates",
       icon: Settings,
       roles: ["ADMIN"] as Role[],

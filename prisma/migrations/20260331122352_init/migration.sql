@@ -63,6 +63,7 @@ CREATE TABLE "Quotation" (
     "companyTaxId" TEXT,
     "companyPhone" TEXT,
     "contactPhone" TEXT,
+    "referrer" TEXT,
     "periodStart" DATETIME,
     "periodEnd" DATETIME,
     "subtotal" INTEGER NOT NULL DEFAULT 0,

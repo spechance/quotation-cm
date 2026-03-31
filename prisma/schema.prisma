@@ -101,6 +101,7 @@ model Quotation {
   companyTaxId   String?
   companyPhone   String?
   contactPhone   String?
+  referrer       String? // 引薦廠商
 
   // Date range for project period
   periodStart DateTime?

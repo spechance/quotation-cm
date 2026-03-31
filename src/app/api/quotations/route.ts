@@ -109,6 +109,7 @@ export async function POST(req: NextRequest) {
       companyTaxId: data.companyTaxId,
       companyPhone: data.companyPhone,
       contactPhone: data.contactPhone,
+      referrer: data.referrer,
       subtotal,
       taxAmount,
       totalAmount,

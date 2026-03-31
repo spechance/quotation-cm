@@ -13,6 +13,7 @@ interface Quotation {
   companyName: string;
   status: string;
   totalAmount: number;
+  referrer: string;
   updatedAt: string;
   createdBy: { name: string };
   services: { sectionTitle: string; quotationType: { name: string } }[];
@@ -103,6 +104,9 @@ export default function QuotationsPage() {
                 金額
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                引薦廠商
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                 建立者
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -116,13 +120,13 @@ export default function QuotationsPage() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-500">
                   載入中...
                 </td>
               </tr>
             ) : quotations.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center">
+                <td colSpan={9} className="px-6 py-12 text-center">
                   <FileText className="mx-auto h-10 w-10 text-gray-300" />
                   <p className="mt-2 text-sm text-gray-500">尚無報價單</p>
                 </td>
@@ -133,7 +137,7 @@ export default function QuotationsPage() {
                   <td className="px-6 py-4">
                     <Link
                       href={`/quotations/${q.id}`}
-                      className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
                     >
                       {q.quotationNumber}
                     </Link>
@@ -165,6 +169,9 @@ export default function QuotationsPage() {
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">
                     {formatCurrency(q.totalAmount)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {q.referrer || "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {q.createdBy.name}

@@ -38,6 +38,7 @@ export const createQuotationSchema = z.object({
   companyTaxId: z.string().optional(),
   companyPhone: z.string().optional(),
   contactPhone: z.string().optional(),
+  referrer: z.string().optional(),
   stampTextA: z.string().optional(),
   stampTextB: z.string().optional(),
   generalTerms: z.array(z.string()).default([]),
