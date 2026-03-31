@@ -1,4 +1,3 @@
-import { COMPANY_INFO } from "@/lib/constants";
 import { formatNumber, formatDate } from "@/lib/utils";
 
 interface PdfItem {
@@ -41,6 +40,13 @@ interface PdfQuotation {
   salesPhone: string;
   stampTextA?: string;
   stampTextB?: string;
+  companyInfo: {
+    name: string;
+    nameEn: string;
+    address: string;
+    taxId: string;
+    phone: string;
+  };
 }
 
 import { readFileSync, existsSync } from "fs";
@@ -420,8 +426,8 @@ export function renderQuotationHtml(data: PdfQuotation): string {
 
   <!-- Footer -->
   <div class="footer">
-    ${COMPANY_INFO.name} ${COMPANY_INFO.nameEn} 地址 ${COMPANY_INFO.address}<br>
-    統編: ${COMPANY_INFO.taxId} 電話:${COMPANY_INFO.phone} 業務：${data.salesName || ""} 手機：${data.salesPhone || ""}
+    ${data.companyInfo.name} ${data.companyInfo.nameEn} 地址 ${data.companyInfo.address}<br>
+    統編: ${data.companyInfo.taxId} 電話:${data.companyInfo.phone} 業務：${data.salesName} 手機：${data.salesPhone}
   </div>
 </div>
 </body>

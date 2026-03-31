@@ -239,3 +239,10 @@ model QuotationSequence {
   year    Int @id
   lastSeq Int @default(0)
 }
+
+// ─── System Settings (key-value store) ───
+
+model SystemSetting {
+  key   String @id
+  value String
+}

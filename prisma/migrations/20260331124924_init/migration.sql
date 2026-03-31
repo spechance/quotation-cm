@@ -153,6 +153,12 @@ CREATE TABLE "QuotationSequence" (
     "lastSeq" INTEGER NOT NULL DEFAULT 0
 );
 
+-- CreateTable
+CREATE TABLE "SystemSetting" (
+    "key" TEXT NOT NULL PRIMARY KEY,
+    "value" TEXT NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
