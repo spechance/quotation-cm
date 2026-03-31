@@ -7,6 +7,7 @@ CREATE TABLE "User" (
     "phone" TEXT NOT NULL DEFAULT '',
     "role" TEXT NOT NULL DEFAULT 'SALES',
     "active" BOOLEAN NOT NULL DEFAULT true,
+    "mustChangePassword" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );

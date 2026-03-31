@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 
 const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  password: z.string().min(6),
   phone: z.string().default(""),
   role: z.enum(["ADMIN", "FINANCE", "SALES"]),
 });
+
+function generateRandomPassword(): string {
+  return randomBytes(6).toString("base64url").slice(0, 10);
+}
 
 // GET /api/users
 export async function GET() {
@@ -43,18 +47,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "資料驗證失敗", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { name, email, password, phone, role } = parsed.data;
+  const { name, email, phone, role } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return NextResponse.json({ error: "此信箱已被使用" }, { status: 409 });
   }
 
-  const passwordHash = await hash(password, 12);
+  // Generate random password
+  const tempPassword = generateRandomPassword();
+  const passwordHash = await hash(tempPassword, 12);
+
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, phone, role },
+    data: { name, email, passwordHash, phone, role, mustChangePassword: true },
     select: { id: true, name: true, email: true, phone: true, role: true },
   });
 
-  return NextResponse.json(user, { status: 201 });
+  // Return the temp password so admin can copy it
+  return NextResponse.json({ ...user, tempPassword }, { status: 201 });
 }

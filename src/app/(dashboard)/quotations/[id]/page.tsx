@@ -353,7 +353,7 @@ export default function QuotationDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {service.items.map((item) => (
+                {service.items.filter((item) => item.quantity > 0).map((item) => (
                   <tr key={item.id} className={`border-b border-gray-100 ${item.isCustom && quotation.status === "PENDING_APPROVAL" ? "bg-blue-50" : ""}`}
                     title={item.isCustom && quotation.status === "PENDING_APPROVAL" ? "業務新增項目" : ""}>
                     <td className="px-2 py-2 text-sm text-gray-500">

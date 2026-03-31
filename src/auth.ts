@@ -12,10 +12,12 @@ declare module "next-auth" {
       name: string;
       email: string;
       role: Role;
+      mustChangePassword: boolean;
     };
   }
   interface User {
     role: Role;
+    mustChangePassword: boolean;
   }
 }
 
@@ -51,6 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role as Role,
+          mustChangePassword: user.mustChangePassword,
         };
       },
     }),
@@ -60,12 +63,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id!;
         token.role = user.role;
+        token.mustChangePassword = user.mustChangePassword;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
       session.user.role = token.role as Role;
+      session.user.mustChangePassword = token.mustChangePassword as boolean;
       return session;
     },
   },

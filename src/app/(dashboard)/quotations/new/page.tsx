@@ -77,7 +77,7 @@ export default function NewQuotationPage() {
         itemNumber: itemIdx + 1,
         description: item.description,
         specification: item.specification || "",
-        quantity: 1,
+        quantity: 0,
         unit: item.unit || "",
         unitPrice: item.unitPrice || 0,
         isCustom: false,

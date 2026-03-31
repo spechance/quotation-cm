@@ -5,7 +5,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Public routes
-  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
+  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth") || pathname.startsWith("/change-password")) {
     return NextResponse.next();
   }
 
@@ -14,6 +14,11 @@ export default auth((req) => {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Force password change
+  if (req.auth.user.mustChangePassword && !pathname.startsWith("/api/")) {
+    return NextResponse.redirect(new URL("/change-password", req.url));
   }
 
   const role = req.auth.user.role;

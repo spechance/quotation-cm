@@ -14,9 +14,10 @@ model User {
   name         String
   email        String  @unique
   passwordHash String
-  phone        String  @default("") // 手機號碼
-  role         String  @default("SALES") // ADMIN, FINANCE, SALES
-  active       Boolean @default(true)
+  phone              String  @default("")
+  role               String  @default("SALES") // ADMIN, FINANCE, SALES
+  active             Boolean @default(true)
+  mustChangePassword Boolean @default(false) // 首次登入需改密碼
 
   createdQuotations  Quotation[]      @relation("CreatedBy")
   approvalRecords    ApprovalRecord[] @relation("ApprovedBy")

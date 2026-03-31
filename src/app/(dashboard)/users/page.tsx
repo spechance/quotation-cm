@@ -19,6 +19,7 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   async function fetchUsers() {
     const res = await fetch("/api/users");
@@ -40,16 +41,15 @@ export default function UsersPage() {
       phone: formData.get("phone") || "",
       role: formData.get("role"),
     };
-    const password = formData.get("password") as string;
-    if (password) body.password = password;
+
+    // Only for editing: allow optional password change
+    if (editingUser) {
+      const password = formData.get("password") as string;
+      if (password) body.password = password;
+    }
 
     const url = editingUser ? `/api/users/${editingUser.id}` : "/api/users";
     const method = editingUser ? "PUT" : "POST";
-
-    if (!editingUser && !password) {
-      alert("請輸入密碼");
-      return;
-    }
 
     const res = await fetch(url, {
       method,
@@ -58,6 +58,11 @@ export default function UsersPage() {
     });
 
     if (res.ok) {
+      const data = await res.json();
+      // Show generated password for new users
+      if (!editingUser && data.tempPassword) {
+        setGeneratedPassword(data.tempPassword);
+      }
       setShowForm(false);
       setEditingUser(null);
       fetchUsers();
@@ -138,18 +143,18 @@ export default function UsersPage() {
                   className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  密碼{editingUser && "（留空則不變更）"}
-                </label>
-                <input
-                  name="password"
-                  type="password"
-                  required={!editingUser}
-                  minLength={6}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
-                />
-              </div>
+              {/* Only show password field when editing (to reset password) */}
+              {editingUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">重設密碼（留空則不變更）</label>
+                  <input name="password" type="password" minLength={6} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" />
+                </div>
+              )}
+              {!editingUser && (
+                <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+                  系統將自動產生臨時密碼，建立後會顯示供您複製。該人員首次登入時將被要求更改密碼。
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   角色
@@ -276,6 +281,31 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Generated Password Modal */}
+      {generatedPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-2 text-lg font-semibold text-gray-900">帳號建立成功</h2>
+            <p className="mb-4 text-sm text-gray-500">請複製以下臨時密碼提供給該人員。首次登入時將要求更改密碼。</p>
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <code className="flex-1 text-lg font-mono font-bold text-gray-900 select-all">{generatedPassword}</code>
+              <button
+                onClick={() => { navigator.clipboard.writeText(generatedPassword); alert("已複製到剪貼簿"); }}
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+              >
+                複製
+              </button>
+            </div>
+            <button
+              onClick={() => setGeneratedPassword(null)}
+              className="w-full rounded-lg bg-primary-600 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              關閉
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
