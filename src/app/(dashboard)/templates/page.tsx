@@ -31,6 +31,11 @@ export default function TemplatesPage() {
   const [stampB, setStampB] = useState("發票章用印");
   const [selectedTermsSetId, setSelectedTermsSetId] = useState<string>("");
 
+  // Sections/items editor state
+  interface SectionItem { description: string; specification: string; unit: string; unitPrice: number; }
+  interface SectionEdit { title: string; items: SectionItem[]; }
+  const [sections, setSections] = useState<SectionEdit[]>([]);
+
   // Terms form state
   const [showTermsForm, setShowTermsForm] = useState(false);
   const [editingTerms, setEditingTerms] = useState<GeneralTermsSet | null>(null);
@@ -53,6 +58,14 @@ export default function TemplatesPage() {
   useEffect(() => { fetchAll(); }, []);
 
   // ── Template handlers ──
+  function parseSections(ds: unknown): SectionEdit[] {
+    if (!ds || !Array.isArray(ds)) return [{ title: "", items: [{ description: "", specification: "", unit: "", unitPrice: 0 }] }];
+    return (ds as { title: string; items: { description: string; specification?: string; unit?: string; unitPrice: number }[] }[]).map((s) => ({
+      title: s.title,
+      items: s.items.map((it) => ({ description: it.description, specification: it.specification || "", unit: it.unit || "", unitPrice: it.unitPrice || 0 })),
+    }));
+  }
+
   function openTemplateForm(source?: Template, isEdit?: boolean) {
     if (isEdit && source) {
       setEditingTemplate(source);
@@ -61,6 +74,7 @@ export default function TemplatesPage() {
       setStampB(source.stampTextB || "發票章用印");
       setSelectedTermsSetId(source.generalTermsSetId || "");
       setVisibility(source.visibility || "ALL");
+      setSections(parseSections(source.defaultSections));
     } else {
       setEditingTemplate(null);
       setCopyFrom(source?.id || "");
@@ -68,6 +82,7 @@ export default function TemplatesPage() {
       setStampB(source?.stampTextB || "發票章用印");
       setSelectedTermsSetId(source?.generalTermsSetId || "");
       setVisibility("ALL");
+      setSections(source ? parseSections(source.defaultSections) : [{ title: "", items: [{ description: "", specification: "", unit: "", unitPrice: 0 }] }]);
     }
     setSelectedUsers([]);
     setShowTemplateForm(true);
@@ -76,20 +91,15 @@ export default function TemplatesPage() {
   async function handleTemplateSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    let defaultTerms = (form.get("defaultTerms") as string).split("\n").filter((t) => t.trim());
-    let defaultSections = null;
-
-    if (copyFrom && !editingTemplate) {
-      const source = templates.find((t) => t.id === copyFrom);
-      if (source) {
-        if (defaultTerms.length === 0) defaultTerms = source.defaultTerms;
-        defaultSections = source.defaultSections;
-      }
-    }
+    const defaultTerms = (form.get("defaultTerms") as string).split("\n").filter((t) => t.trim());
+    const defaultSections = sections.filter((s) => s.title.trim()).map((s) => ({
+      title: s.title,
+      items: s.items.filter((it) => it.description.trim()),
+    }));
 
     const body = {
       name: form.get("name"), code: form.get("code"), description: form.get("description"),
-      defaultTerms, defaultSections,
+      defaultTerms, defaultSections: defaultSections.length > 0 ? defaultSections : null,
       stampTextA: stampA, stampTextB: stampB,
       generalTermsSetId: selectedTermsSetId || null,
       visibility, visibleUserIds: visibility === "SPECIFIC" ? selectedUsers : [],
@@ -218,7 +228,7 @@ export default function TemplatesPage() {
             {!editingTemplate && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">從既有版型複製</label>
-                <select value={copyFrom} onChange={(e) => { setCopyFrom(e.target.value); const src = templates.find((t) => t.id === e.target.value); if (src) { setStampA(src.stampTextA); setStampB(src.stampTextB); setSelectedTermsSetId(src.generalTermsSetId || ""); } }} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none">
+                <select value={copyFrom} onChange={(e) => { setCopyFrom(e.target.value); const src = templates.find((t) => t.id === e.target.value); if (src) { setStampA(src.stampTextA); setStampB(src.stampTextB); setSelectedTermsSetId(src.generalTermsSetId || ""); setSections(parseSections(src.defaultSections)); } }} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none">
                   <option value="">不複製（從空白建立）</option>
                   {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
@@ -246,6 +256,35 @@ export default function TemplatesPage() {
               </div>
 
               {/* Service-specific terms */}
+              {/* Sections & Items Editor */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">服務大項與項目規格</label>
+                {sections.map((section, sIdx) => (
+                  <div key={sIdx} className="mb-4 rounded-lg border border-gray-200 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <input value={section.title} onChange={(e) => { const s = [...sections]; s[sIdx] = { ...s[sIdx], title: e.target.value }; setSections(s); }} placeholder="大項名稱（如：口碑行銷操作）" className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm font-semibold focus:border-primary-500 focus:outline-none" />
+                      {sections.length > 1 && <button type="button" onClick={() => setSections(sections.filter((_, i) => i !== sIdx))} className="rounded p-1 text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>}
+                    </div>
+                    <table className="w-full text-sm">
+                      <thead><tr className="text-xs text-gray-500"><th className="px-1 py-1 text-left">項目</th><th className="px-1 py-1 text-left">規格說明</th><th className="px-1 py-1 text-left w-16">單位</th><th className="px-1 py-1 text-left w-24">單價</th><th className="w-8"></th></tr></thead>
+                      <tbody>
+                        {section.items.map((item, iIdx) => (
+                          <tr key={iIdx}>
+                            <td className="px-1 py-1"><input value={item.description} onChange={(e) => { const s = [...sections]; s[sIdx].items[iIdx] = { ...item, description: e.target.value }; setSections(s); }} className="w-full rounded border border-gray-200 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none" /></td>
+                            <td className="px-1 py-1"><input value={item.specification} onChange={(e) => { const s = [...sections]; s[sIdx].items[iIdx] = { ...item, specification: e.target.value }; setSections(s); }} className="w-full rounded border border-gray-200 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none" /></td>
+                            <td className="px-1 py-1"><input value={item.unit} onChange={(e) => { const s = [...sections]; s[sIdx].items[iIdx] = { ...item, unit: e.target.value }; setSections(s); }} className="w-full rounded border border-gray-200 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none" /></td>
+                            <td className="px-1 py-1"><input type="number" value={item.unitPrice} onChange={(e) => { const s = [...sections]; s[sIdx].items[iIdx] = { ...item, unitPrice: parseInt(e.target.value) || 0 }; setSections(s); }} className="w-full rounded border border-gray-200 px-2 py-1 text-sm text-right focus:border-primary-500 focus:outline-none" /></td>
+                            <td className="px-1 py-1">{section.items.length > 1 && <button type="button" onClick={() => { const s = [...sections]; s[sIdx].items = s[sIdx].items.filter((_, j) => j !== iIdx); setSections(s); }} className="rounded p-0.5 text-gray-400 hover:text-red-500"><Trash2 className="h-3 w-3" /></button>}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <button type="button" onClick={() => { const s = [...sections]; s[sIdx].items = [...s[sIdx].items, { description: "", specification: "", unit: "", unitPrice: 0 }]; setSections(s); }} className="mt-1 inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800"><Plus className="h-3 w-3" />新增項目</button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setSections([...sections, { title: "", items: [{ description: "", specification: "", unit: "", unitPrice: 0 }] }])} className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-800"><Plus className="h-4 w-4" />新增大項</button>
+              </div>
+
               <div><label className="block text-sm font-medium text-gray-700">服務條款（每行一條）</label><textarea name="defaultTerms" rows={6} defaultValue={editingTemplate?.defaultTerms.join("\n") || (copyFrom ? templates.find((t) => t.id === copyFrom)?.defaultTerms.join("\n") : "")} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" /></div>
 
               {/* Visibility */}
