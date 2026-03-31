@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ─── Auth & User Models ───
+
+model User {
+  id           String  @id @default(cuid())
+  name         String
+  email        String  @unique
+  passwordHash String
+  role         String  @default("SALES") // ADMIN, FINANCE, SALES
+  active       Boolean @default(true)
+
+  createdQuotations  Quotation[]      @relation("CreatedBy")
+  approvalRecords    ApprovalRecord[] @relation("ApprovedBy")
+  visibleTemplates   TemplateVisibility[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Quotation Type (Template Definition) ───
+
+model QuotationType {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  code        String  @unique
+  description String?
+
+  defaultTerms    String @default("[]")
+  defaultSections String?
+
+  active     Boolean @default(true)
+  sortOrder  Int     @default(0)
+
+  // Visibility: "ALL" = everyone, "SPECIFIC" = only assigned users
+  visibility String @default("ALL")
+
+  quotationServices  QuotationService[]
+  visibleToUsers     TemplateVisibility[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Template Visibility (many-to-many) ───
+
+model TemplateVisibility {
+  id              String        @id @default(cuid())
+  quotationTypeId String
+  quotationType   QuotationType @relation(fields: [quotationTypeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([quotationTypeId, userId])
+}
+
+// ─── Quotation (Main Document) ───
+
+model Quotation {
+  id              String @id @default(cuid())
+  quotationNumber String @unique
+  version         Int    @default(1)
+  status          String @default("DRAFT")
+
+  // Type: "STANDARD" (normal quotation) or "UPLOAD" (Word file upload)
+  quotationType String @default("STANDARD")
+
+  // Client info
+  projectName    String
+  companyName    String
+  contactAddress String?
+  primaryContact String
+  projectPeriod  String?
+  companyTaxId   String?
+  companyPhone   String?
+  contactPhone   String?
+
+  // Date range for project period
+  periodStart DateTime?
+  periodEnd   DateTime?
+
+  // Financials (TWD integer)
+  subtotal    Int    @default(0)
+  taxRate     Float  @default(0.05)
+  taxAmount   Int    @default(0)
+  totalAmount Int    @default(0)
+
+  // JSON string for general terms array
+  generalTerms String @default("[]")
+
+  // Stamp text for signature area
+  stampTextA String @default("發票章用印")
+  stampTextB String @default("發票章用印")
+
+  // Uploaded Word file path (for UPLOAD type)
+  uploadedFilePath String?
+  uploadedFileName String?
+
+  notes String?
+
+  createdById String
+  createdBy   User @relation("CreatedBy", fields: [createdById], references: [id])
+
+  services       QuotationService[]
+  approvals      ApprovalRecord[]
+  versionHistory QuotationVersion[]
+
+  quotationDate DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdById])
+}
+
+// ─── Service Section within a Quotation ───
+
+model QuotationService {
+  id              String        @id @default(cuid())
+  quotationId     String
+  quotation       Quotation     @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationTypeId String
+  quotationType   QuotationType @relation(fields: [quotationTypeId], references: [id])
+
+  sectionLabel String
+  sectionTitle String
+
+  // Date range for service period
+  periodStart DateTime?
+  periodEnd   DateTime?
+  period      String? // Display string (auto-calculated)
+  quantity    String?
+  months      Int     @default(0) // Auto-calculated months from date range
+  subtotal    Int     @default(0)
+
+  terms String @default("[]")
+
+  sortOrder Int @default(0)
+
+  items QuotationItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quotationId])
+}
+
+// ─── Line Items within a Service Section ───
+
+model QuotationItem {
+  id                 String           @id @default(cuid())
+  quotationServiceId String
+  quotationService   QuotationService @relation(fields: [quotationServiceId], references: [id], onDelete: Cascade)
+
+  itemNumber    Int
+  description   String
+  specification String?
+  quantity      Int     @default(1)
+  unit          String?
+  unitPrice     Int     @default(0)
+  amount        Int     @default(0)
+
+  // Whether this item is from the template (false) or added by sales (true)
+  isCustom  Boolean @default(false)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quotationServiceId])
+}
+
+// ─── Approval Records ───
+
+model ApprovalRecord {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation("ApprovedBy", fields: [userId], references: [id])
+  action      String
+  comment     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([quotationId])
+}
+
+// ─── Version History ───
+
+model QuotationVersion {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  version     Int
+  snapshot    String
+  changedById String
+  changeNote  String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([quotationId, version])
+  @@index([quotationId])
+}
+
+// ─── Auto-numbering Sequence ───
+
+model QuotationSequence {
+  year    Int @id
+  lastSeq Int @default(0)
+}
