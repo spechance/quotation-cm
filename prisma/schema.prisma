@@ -25,6 +25,19 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+// ─── General Terms Set (independently managed) ───
+
+model GeneralTermsSet {
+  id    String  @id @default(cuid())
+  name  String  @unique // e.g. "標準條款", "簡易條款"
+  terms String  @default("[]") // JSON string array
+
+  quotationTypes QuotationType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Quotation Type (Template Definition) ───
 
 model QuotationType {
@@ -33,14 +46,20 @@ model QuotationType {
   code        String  @unique
   description String?
 
-  defaultTerms    String @default("[]")
+  defaultTerms    String @default("[]") // Service-specific terms
   defaultSections String?
+
+  // Stamp text defaults
+  stampTextA String @default("發票章用印")
+  stampTextB String @default("發票章用印")
+
+  // Link to general terms set
+  generalTermsSetId String?
+  generalTermsSet   GeneralTermsSet? @relation(fields: [generalTermsSetId], references: [id])
 
   active     Boolean @default(true)
   sortOrder  Int     @default(0)
-
-  // Visibility: "ALL" = everyone, "SPECIFIC" = only assigned users
-  visibility String @default("ALL")
+  visibility String  @default("ALL")
 
   quotationServices  QuotationService[]
   visibleToUsers     TemplateVisibility[]

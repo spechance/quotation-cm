@@ -10,6 +10,9 @@ const createTemplateSchema = z.object({
   description: z.string().optional(),
   defaultTerms: z.array(z.string()).default([]),
   defaultSections: z.any().optional(),
+  stampTextA: z.string().default("發票章用印"),
+  stampTextB: z.string().default("發票章用印"),
+  generalTermsSetId: z.string().optional().nullable(),
   visibility: z.enum(["ALL", "SPECIFIC"]).default("ALL"),
   visibleUserIds: z.array(z.string()).default([]),
 });
@@ -25,9 +28,9 @@ export async function GET() {
     templates = await prisma.quotationType.findMany({
       where: { active: true },
       orderBy: { sortOrder: "asc" },
+      include: { generalTermsSet: true },
     });
   } else {
-    // Sales only see ALL templates + templates they're assigned to
     templates = await prisma.quotationType.findMany({
       where: {
         active: true,
@@ -37,6 +40,7 @@ export async function GET() {
         ],
       },
       orderBy: { sortOrder: "asc" },
+      include: { generalTermsSet: true },
     });
   }
 
@@ -44,6 +48,9 @@ export async function GET() {
     ...t,
     defaultTerms: fromJsonString(t.defaultTerms),
     defaultSections: t.defaultSections ? JSON.parse(t.defaultSections) : null,
+    generalTermsSet: t.generalTermsSet
+      ? { ...t.generalTermsSet, terms: fromJsonString(t.generalTermsSet.terms) }
+      : null,
   }));
 
   return NextResponse.json(parsed);
@@ -69,6 +76,9 @@ export async function POST(req: NextRequest) {
       description: parsed.data.description,
       defaultTerms: JSON.stringify(parsed.data.defaultTerms),
       defaultSections: parsed.data.defaultSections ? JSON.stringify(parsed.data.defaultSections) : null,
+      stampTextA: parsed.data.stampTextA,
+      stampTextB: parsed.data.stampTextB,
+      generalTermsSetId: parsed.data.generalTermsSetId || null,
       visibility: parsed.data.visibility,
       visibleToUsers: parsed.data.visibility === "SPECIFIC" && parsed.data.visibleUserIds.length > 0
         ? { create: parsed.data.visibleUserIds.map((userId) => ({ userId })) }

@@ -12,13 +12,19 @@ export async function GET(
   if (!session) return NextResponse.json({ error: "未授權" }, { status: 401 });
 
   const { id } = await params;
-  const template = await prisma.quotationType.findUnique({ where: { id } });
+  const template = await prisma.quotationType.findUnique({
+    where: { id },
+    include: { generalTermsSet: true },
+  });
   if (!template) return NextResponse.json({ error: "找不到版型" }, { status: 404 });
 
   return NextResponse.json({
     ...template,
     defaultTerms: fromJsonString(template.defaultTerms),
     defaultSections: template.defaultSections ? JSON.parse(template.defaultSections) : null,
+    generalTermsSet: template.generalTermsSet
+      ? { ...template.generalTermsSet, terms: fromJsonString(template.generalTermsSet.terms) }
+      : null,
   });
 }
 
@@ -46,7 +52,11 @@ export async function PUT(
         : body.defaultTerms,
       defaultSections: body.defaultSections
         ? JSON.stringify(body.defaultSections)
-        : null,
+        : undefined,
+      stampTextA: body.stampTextA,
+      stampTextB: body.stampTextB,
+      generalTermsSetId: body.generalTermsSetId || null,
+      visibility: body.visibility,
       active: body.active,
     },
   });

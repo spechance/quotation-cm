@@ -45,6 +45,27 @@ async function main() {
     },
   });
 
+  // Create default General Terms Set
+  const defaultTerms = await prisma.generalTermsSet.upsert({
+    where: { name: "標準條款" },
+    update: {},
+    create: {
+      name: "標準條款",
+      terms: JSON.stringify([
+        "(一)本協議未約定事項，雙方得以書面方式另行約定，修正時亦同，並依文件最終修改日期做為最終效力。附件為本合約之一部份。",
+        "(二)本協議正本由雙方各執乙份。",
+        "(三)關於因本協議所生之糾紛，雙方同意依誠信原則協商解決，若有涉訟必要時，雙方合意以臺灣台北地方法院為第一審管轄法院，並以中華民國法律為準據法。",
+        "(四)乙方應以善良管理人之注意義務履行本協議，並不得違反法令強制或禁止規定、公共秩序及善良風俗，並應確保遵循保險法、洗錢防制法、個人資料保護法、消費者保護法及其他法令之規定。",
+        "(五)除雙方另有約定者外，甲、乙任一方依本協議應為之通知，應以書面方式送達至本協議所載地址。如有變更送達地址時，應以書面通知他方。若依送達地址所為之書面通知，發生送達不到或他方拒收之情形時，則以郵遞日視為送達。",
+        "(六)匯款帳號：戶名「全偲行銷有限公司」，「彰化銀行-古亭分行」\n　　銀行代號「009」，帳號「5116-01-880888-00」",
+        "(七)付款方式: 每月執行前，甲方需先支付當月費用",
+        "(八)甲方實際匯至乙方指定帳戶之金額，應為加計稅金後之金額，且匯款手續費由甲方承擔",
+        "(九)報價單有效期限：超過7天回簽報價單，此報價單金額無效。",
+        "(十)匯款時間：需14天內完成匯款",
+      ]),
+    },
+  });
+
   // Create quotation type: 口碑報價單
   const womTerms = [
     "1.本報價效期僅限報價日期起始計十四日；委刊內容為各項合作內容與意涵，附件同合約內容之一。",
@@ -82,6 +103,9 @@ async function main() {
       sortOrder: 1,
       defaultTerms: JSON.stringify(womTerms),
       defaultSections: JSON.stringify(womSections),
+      stampTextA: "發票章用印",
+      stampTextB: "發票章用印",
+      generalTermsSetId: defaultTerms.id,
     },
   });
 
@@ -134,6 +158,9 @@ async function main() {
       sortOrder: 2,
       defaultTerms: JSON.stringify(fbTerms),
       defaultSections: JSON.stringify(fbSections),
+      stampTextA: "發票章用印",
+      stampTextB: "發票章用印",
+      generalTermsSetId: defaultTerms.id,
     },
   });
 

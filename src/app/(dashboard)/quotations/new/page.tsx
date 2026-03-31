@@ -24,6 +24,9 @@ interface QuotationType {
   code: string;
   defaultTerms: string[];
   defaultSections: TemplateSection[] | null;
+  stampTextA: string;
+  stampTextB: string;
+  generalTermsSet: { id: string; name: string; terms: string[] } | null;
 }
 
 interface ItemForm {
@@ -70,9 +73,10 @@ export default function NewQuotationPage() {
   const [companyPhone, setCompanyPhone] = useState("");
   const [contactPhone, setContactPhone] = useState("");
 
-  // Stamp text
+  // Stamp text (auto-loaded from first template added)
   const [stampTextA, setStampTextA] = useState("發票章用印");
   const [stampTextB, setStampTextB] = useState("發票章用印");
+  const [stampFromTemplate, setStampFromTemplate] = useState(false);
 
   // Services
   const [services, setServices] = useState<ServiceForm[]>([]);
@@ -111,6 +115,18 @@ export default function NewQuotationPage() {
       const updated = [...prev, ...newServices];
       return updated.map((s, i) => ({ ...s, sectionLabel: getChineseNumeral(i) }));
     });
+
+    // Auto-set stamp text from first template added
+    if (!stampFromTemplate) {
+      setStampTextA(template.stampTextA || "發票章用印");
+      setStampTextB(template.stampTextB || "發票章用印");
+      setStampFromTemplate(true);
+    }
+
+    // Auto-set general terms from template's linked terms set
+    if (template.generalTermsSet) {
+      setGeneralTerms(template.generalTermsSet.terms);
+    }
   }
 
   function removeService(index: number) {
@@ -520,18 +536,18 @@ export default function NewQuotationPage() {
             </div>
           ))}
 
-          {/* Stamp Text (Admin/Finance only) */}
-          {!isSales && services.length > 0 && (
+          {/* Stamp Text (from template, Admin/Finance can override) */}
+          {services.length > 0 && (
             <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">簽核區設定</h2>
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">簽核區設定 <span className="text-xs font-normal text-gray-400">（預設從版型帶入）</span></h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">甲方用印文字</label>
-                  <input value={stampTextA} onChange={(e) => setStampTextA(e.target.value)} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" />
+                  <input value={stampTextA} onChange={(e) => setStampTextA(e.target.value)} disabled={isSales} className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none ${isSales ? "bg-gray-50" : ""}`} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">乙方用印文字</label>
-                  <input value={stampTextB} onChange={(e) => setStampTextB(e.target.value)} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none" />
+                  <input value={stampTextB} onChange={(e) => setStampTextB(e.target.value)} disabled={isSales} className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none ${isSales ? "bg-gray-50" : ""}`} />
                 </div>
               </div>
             </div>

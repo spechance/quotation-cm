@@ -11,6 +11,15 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "GeneralTermsSet" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "terms" TEXT NOT NULL DEFAULT '[]',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "QuotationType" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -18,11 +27,15 @@ CREATE TABLE "QuotationType" (
     "description" TEXT,
     "defaultTerms" TEXT NOT NULL DEFAULT '[]',
     "defaultSections" TEXT,
+    "stampTextA" TEXT NOT NULL DEFAULT '發票章用印',
+    "stampTextB" TEXT NOT NULL DEFAULT '發票章用印',
+    "generalTermsSetId" TEXT,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
     "visibility" TEXT NOT NULL DEFAULT 'ALL',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "QuotationType_generalTermsSetId_fkey" FOREIGN KEY ("generalTermsSetId") REFERENCES "GeneralTermsSet" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -139,6 +152,9 @@ CREATE TABLE "QuotationSequence" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GeneralTermsSet_name_key" ON "GeneralTermsSet"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "QuotationType_name_key" ON "QuotationType"("name");
