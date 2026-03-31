@@ -19,7 +19,7 @@ export default auth((req) => {
   const role = req.auth.user.role;
 
   // Admin-only routes
-  if (pathname.startsWith("/users") || pathname.startsWith("/templates")) {
+  if (pathname.startsWith("/users") || pathname.startsWith("/templates") || pathname.startsWith("/settings")) {
     if (role !== "ADMIN") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }

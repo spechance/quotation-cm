@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,6 +10,7 @@ import {
   Settings,
   Users,
   LogOut,
+  ImageIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,11 @@ interface SidebarProps {
 
 export function Sidebar({ userRole, userName }: SidebarProps) {
   const pathname = usePathname();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings/images").then((r) => r.json()).then((d) => setLogoUrl(d.logo));
+  }, []);
 
   const navItems = [
     {
@@ -59,6 +66,12 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       icon: Users,
       roles: ["ADMIN"] as Role[],
     },
+    {
+      label: "系統設定",
+      href: "/settings",
+      icon: ImageIcon,
+      roles: ["ADMIN"] as Role[],
+    },
   ];
 
   const filteredItems = navItems.filter((item) =>
@@ -70,9 +83,11 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-gray-200 px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          {/* 替換為全偲 Logo：將圖片放到 public/logo.png */}
-          <img src="/logo.png" alt="全偲行銷" className="h-8 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling!.classList.remove('hidden'); }} />
-          <div className="hidden flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">C</div>
+          {logoUrl ? (
+            <img src={logoUrl} alt="全偲行銷" className="h-8 w-auto" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">C</div>
+          )}
           <span className="text-base font-bold text-gray-900">全偲行銷</span>
         </Link>
       </div>

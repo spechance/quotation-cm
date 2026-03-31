@@ -43,8 +43,37 @@ interface PdfQuotation {
   stampTextB?: string;
 }
 
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+
+function getImageDataUri(name: string): string | null {
+  const publicDir = join(process.cwd(), "public");
+  // Try to read meta file first
+  try {
+    const meta = JSON.parse(readFileSync(join(publicDir, `${name}-meta.json`), "utf-8"));
+    const filePath = join(publicDir, meta.fileName);
+    if (existsSync(filePath)) {
+      const data = readFileSync(filePath);
+      const ext = meta.ext === "svg" ? "svg+xml" : meta.ext === "jpg" ? "jpeg" : meta.ext;
+      return `data:image/${ext};base64,${data.toString("base64")}`;
+    }
+  } catch { /* ignore */ }
+  // Fallback: try common extensions
+  for (const ext of ["png", "jpg", "jpeg", "svg", "webp"]) {
+    const filePath = join(publicDir, `${name}.${ext}`);
+    if (existsSync(filePath)) {
+      const data = readFileSync(filePath);
+      const mime = ext === "svg" ? "svg+xml" : ext === "jpg" ? "jpeg" : ext;
+      return `data:image/${mime};base64,${data.toString("base64")}`;
+    }
+  }
+  return null;
+}
+
 export function renderQuotationHtml(data: PdfQuotation): string {
   const date = formatDate(data.quotationDate);
+  const logoDataUri = getImageDataUri("logo");
+  const bannerDataUri = getImageDataUri("banner");
   // Build title from service types
   const serviceNames = data.services.map((s) => s.sectionTitle).join("、");
   const title = `全偲行銷-${data.services.length === 1 ? data.services[0].sectionTitle.replace("操作", "") : "綜合"}報價單`;
@@ -253,15 +282,13 @@ export function renderQuotationHtml(data: PdfQuotation): string {
 </head>
 <body>
 <div class="page">
-  <!-- Banner：替換為全偲 Banner，將圖片放到 public/banner.png -->
-  <div style="text-align: center; margin-bottom: 10px;">
-    <img src="${process.env.AUTH_URL || "http://localhost:3000"}/banner.png" style="max-width: 100%; height: auto; max-height: 60px;" onerror="this.style.display='none'" />
-  </div>
+  <!-- Banner -->
+  ${bannerDataUri ? `<div style="text-align: center; margin-bottom: 10px;"><img src="${bannerDataUri}" style="max-width: 100%; height: auto; max-height: 60px;" /></div>` : ""}
 
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <img src="${process.env.AUTH_URL || "http://localhost:3000"}/logo.png" style="height: 36px; width: auto;" onerror="this.style.display='none'" />
+      ${logoDataUri ? `<img src="${logoDataUri}" style="height: 36px; width: auto;" />` : ""}
       <div>
         <div style="font-size: 11px; font-weight: 700; color: #333;">CHANCE MARKETING</div>
       </div>
