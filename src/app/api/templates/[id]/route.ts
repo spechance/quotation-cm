@@ -57,6 +57,7 @@ export async function PUT(
       stampTextB: body.stampTextB,
       generalTermsSetId: body.generalTermsSetId || null,
       visibility: body.visibility,
+      sortOrder: body.sortOrder !== undefined ? body.sortOrder : undefined,
       active: body.active,
     },
   });

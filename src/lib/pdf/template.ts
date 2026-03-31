@@ -253,10 +253,15 @@ export function renderQuotationHtml(data: PdfQuotation): string {
 </head>
 <body>
 <div class="page">
+  <!-- Banner：替換為全偲 Banner，將圖片放到 public/banner.png -->
+  <div style="text-align: center; margin-bottom: 10px;">
+    <img src="${process.env.AUTH_URL || "http://localhost:3000"}/banner.png" style="max-width: 100%; height: auto; max-height: 60px;" onerror="this.style.display='none'" />
+  </div>
+
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="logo-placeholder">C</div>
+      <img src="${process.env.AUTH_URL || "http://localhost:3000"}/logo.png" style="height: 36px; width: auto;" onerror="this.style.display='none'" />
       <div>
         <div style="font-size: 11px; font-weight: 700; color: #333;">CHANCE MARKETING</div>
       </div>

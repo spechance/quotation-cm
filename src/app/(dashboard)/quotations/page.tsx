@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Pencil } from "lucide-react";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -108,18 +108,21 @@ export default function QuotationsPage() {
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                 更新日期
               </th>
+              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-500">
                   載入中...
                 </td>
               </tr>
             ) : quotations.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={8} className="px-6 py-12 text-center">
                   <FileText className="mx-auto h-10 w-10 text-gray-300" />
                   <p className="mt-2 text-sm text-gray-500">尚無報價單</p>
                 </td>
@@ -168,6 +171,17 @@ export default function QuotationsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {formatDate(q.updatedAt)}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {(q.status === "DRAFT" || q.status === "REJECTED") && (
+                      <Link
+                        href={`/quotations/${q.id}/edit`}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        編輯
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))

@@ -82,6 +82,20 @@ export async function POST(req: NextRequest) {
 
   const generalTerms = data.generalTerms.length > 0 ? data.generalTerms : [...GENERAL_TERMS];
 
+  // Verify user exists
+  const userExists = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!userExists) {
+    return NextResponse.json({ error: "使用者不存在，請重新登入" }, { status: 400 });
+  }
+
+  // Verify all quotationTypeIds exist
+  for (const service of data.services) {
+    const typeExists = await prisma.quotationType.findUnique({ where: { id: service.quotationTypeId } });
+    if (!typeExists) {
+      return NextResponse.json({ error: `版型 ID ${service.quotationTypeId} 不存在，請重新整理頁面` }, { status: 400 });
+    }
+  }
+
   const quotation = await prisma.quotation.create({
     data: {
       quotationNumber,

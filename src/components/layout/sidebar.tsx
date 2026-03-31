@@ -48,7 +48,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       roles: ["ADMIN", "FINANCE"] as Role[],
     },
     {
-      label: "版型管理",
+      label: "報價單版型管理",
       href: "/templates",
       icon: Settings,
       roles: ["ADMIN"] as Role[],
@@ -68,11 +68,11 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
   return (
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
+      <div className="flex h-16 items-center border-b border-gray-200 px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">
-            C
-          </div>
+          {/* 替換為全偲 Logo：將圖片放到 public/logo.png */}
+          <img src="/logo.png" alt="全偲行銷" className="h-8 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling!.classList.remove('hidden'); }} />
+          <div className="hidden flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">C</div>
           <span className="text-base font-bold text-gray-900">全偲行銷</span>
         </Link>
       </div>

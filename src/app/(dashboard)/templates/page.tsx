@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Copy, Eye, Trash2 } from "lucide-react";
+import { Plus, Pencil, Copy, Eye, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 interface User { id: string; name: string; }
 interface GeneralTermsSet { id: string; name: string; terms: string[]; }
@@ -137,6 +137,24 @@ export default function TemplatesPage() {
     else { const err = await res.json(); alert(err.error || "操作失敗"); }
   }
 
+  async function moveTemplate(index: number, direction: "up" | "down") {
+    const newTemplates = [...templates];
+    const swapIdx = direction === "up" ? index - 1 : index + 1;
+    if (swapIdx < 0 || swapIdx >= newTemplates.length) return;
+    [newTemplates[index], newTemplates[swapIdx]] = [newTemplates[swapIdx], newTemplates[index]];
+    setTemplates(newTemplates);
+    // Persist new sort order
+    await Promise.all(
+      newTemplates.map((t, i) =>
+        fetch(`/api/templates/${t.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: i }),
+        })
+      )
+    );
+  }
+
   async function deleteTermsSet(set: GeneralTermsSet) {
     if (!confirm(`確定要刪除「${set.name}」？`)) return;
     const res = await fetch(`/api/general-terms/${set.id}`, { method: "DELETE" });
@@ -147,7 +165,7 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">版型管理</h1>
+        <h1 className="text-2xl font-bold text-gray-900">報價單版型管理</h1>
         <button
           onClick={() => tab === "templates" ? openTemplateForm() : openTermsForm()}
           className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
@@ -170,13 +188,20 @@ export default function TemplatesPage() {
       {/* ── Templates Tab ── */}
       {tab === "templates" && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {loading ? <p className="text-sm text-gray-500">載入中...</p> : templates.map((t) => (
+          {loading ? <p className="text-sm text-gray-500">載入中...</p> : templates.map((t, tIdx) => (
             <div key={t.id} className="rounded-xl border border-gray-200 bg-white p-5">
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{t.name}</h3>
-                  <p className="mt-1 text-xs text-gray-500">代碼: {t.code}</p>
-                  {t.description && <p className="mt-1 text-sm text-gray-600">{t.description}</p>}
+                <div className="flex items-start gap-2">
+                  {/* Sort buttons */}
+                  <div className="flex flex-col gap-0.5 pt-0.5">
+                    <button onClick={() => moveTemplate(tIdx, "up")} disabled={tIdx === 0} className="rounded p-0.5 text-gray-300 hover:text-gray-600 disabled:opacity-30" title="上移"><ArrowUp className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => moveTemplate(tIdx, "down")} disabled={tIdx === templates.length - 1} className="rounded p-0.5 text-gray-300 hover:text-gray-600 disabled:opacity-30" title="下移"><ArrowDown className="h-3.5 w-3.5" /></button>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{t.name}</h3>
+                    <p className="mt-1 text-xs text-gray-500">代碼: {t.code}</p>
+                    {t.description && <p className="mt-1 text-sm text-gray-600">{t.description}</p>}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => openTemplateForm(t)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600" title="複製"><Copy className="h-4 w-4" /></button>
