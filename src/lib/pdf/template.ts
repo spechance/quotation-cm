@@ -288,10 +288,6 @@ export function renderQuotationHtml(data: PdfQuotation): string {
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      ${logoDataUri ? `<img src="${logoDataUri}" style="height: 36px; width: auto;" />` : ""}
-      <div>
-        <div style="font-size: 11px; font-weight: 700; color: #333;">CHANCE MARKETING</div>
-      </div>
     </div>
     <div style="text-align: right;">
       <div class="header-title">${title}</div>

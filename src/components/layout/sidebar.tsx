@@ -84,9 +84,9 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
       <div className="flex h-16 items-center border-b border-gray-200 px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
           {logoUrl ? (
-            <img src={logoUrl} alt="全偲行銷" className="h-8 w-auto" />
+            <img src={logoUrl} alt="全偲行銷" className="h-8 w-8 rounded-full object-cover" />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">C</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-sm font-bold text-white">C</div>
           )}
           <span className="text-base font-bold text-gray-900">全偲行銷</span>
         </Link>
