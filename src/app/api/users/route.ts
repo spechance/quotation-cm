@@ -8,6 +8,7 @@ const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
+  phone: z.string().default(""),
   role: z.enum(["ADMIN", "FINANCE", "SALES"]),
 });
 
@@ -20,12 +21,8 @@ export async function GET() {
 
   const users = await prisma.user.findMany({
     select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      active: true,
-      createdAt: true,
+      id: true, name: true, email: true, phone: true,
+      role: true, active: true, createdAt: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -43,13 +40,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = createUserSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "資料驗證失敗", details: parsed.error.flatten() },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "資料驗證失敗", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { name, email, password, role } = parsed.data;
+  const { name, email, password, phone, role } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -58,8 +52,8 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await hash(password, 12);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, role },
-    select: { id: true, name: true, email: true, role: true },
+    data: { name, email, passwordHash, phone, role },
+    select: { id: true, name: true, email: true, phone: true, role: true },
   });
 
   return NextResponse.json(user, { status: 201 });

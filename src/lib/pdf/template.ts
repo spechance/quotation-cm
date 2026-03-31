@@ -37,8 +37,8 @@ interface PdfQuotation {
   totalAmount: number;
   generalTerms: string[];
   services: PdfService[];
-  salesName?: string;
-  salesPhone?: string;
+  salesName: string;
+  salesPhone: string;
   stampTextA?: string;
   stampTextB?: string;
 }

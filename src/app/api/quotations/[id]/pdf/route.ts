@@ -16,7 +16,7 @@ export async function GET(
   const quotation = await prisma.quotation.findUnique({
     where: { id },
     include: {
-      createdBy: { select: { name: true } },
+      createdBy: { select: { name: true, phone: true } },
       services: {
         orderBy: { sortOrder: "asc" },
         include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -63,6 +63,7 @@ export async function GET(
       })),
     })),
     salesName: quotation.createdBy.name,
+    salesPhone: quotation.createdBy.phone || "",
     stampTextA: quotation.stampTextA,
     stampTextB: quotation.stampTextB,
   });

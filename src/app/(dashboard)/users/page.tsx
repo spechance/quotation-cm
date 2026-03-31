@@ -8,6 +8,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  phone: string;
   role: string;
   active: boolean;
   createdAt: string;
@@ -36,6 +37,7 @@ export default function UsersPage() {
     const body: Record<string, unknown> = {
       name: formData.get("name"),
       email: formData.get("email"),
+      phone: formData.get("phone") || "",
       role: formData.get("role"),
     };
     const password = formData.get("password") as string;
@@ -127,6 +129,16 @@ export default function UsersPage() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700">手機號碼</label>
+                <input
+                  name="phone"
+                  type="tel"
+                  defaultValue={editingUser?.phone}
+                  placeholder="例: 0912-345-678"
+                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700">
                   密碼{editingUser && "（留空則不變更）"}
                 </label>
@@ -187,6 +199,9 @@ export default function UsersPage() {
                 電子信箱
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                手機
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                 角色
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -200,7 +215,7 @@ export default function UsersPage() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
                   載入中...
                 </td>
               </tr>
@@ -212,6 +227,9 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {user.email}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {user.phone || "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {ROLE_LABELS[user.role] || user.role}

@@ -8,6 +8,7 @@ const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional(),
   password: z.string().min(6).optional(),
+  phone: z.string().optional(),
   role: z.enum(["ADMIN", "FINANCE", "SALES"]).optional(),
   active: z.boolean().optional(),
 });
@@ -32,6 +33,7 @@ export async function PUT(
   const data: Record<string, unknown> = {};
   if (parsed.data.name) data.name = parsed.data.name;
   if (parsed.data.email) data.email = parsed.data.email;
+  if (parsed.data.phone !== undefined) data.phone = parsed.data.phone;
   if (parsed.data.role) data.role = parsed.data.role;
   if (parsed.data.active !== undefined) data.active = parsed.data.active;
   if (parsed.data.password) {
