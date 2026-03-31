@@ -353,6 +353,7 @@ export function renderQuotationHtml(data: PdfQuotation): string {
       </thead>
       <tbody>
         ${service.items
+          .filter((item) => item.quantity > 0)
           .map(
             (item) => `
           <tr>

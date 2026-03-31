@@ -368,7 +368,7 @@ export default function NewQuotationPage() {
                       })}
                     </tbody>
                   </table>
-                  <button onClick={() => addItem(sIdx)} className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-800"><Plus className="h-4 w-4" />新增項目</button>
+                  <button onClick={() => addItem(sIdx)} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800"><Plus className="h-4 w-4" />新增項目</button>
 
                   {/* Service Terms (read-only display) */}
                   {service.terms.length > 0 && (

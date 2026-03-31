@@ -63,7 +63,7 @@ export default async function ApprovalsPage() {
                   <td className="px-6 py-4">
                     <Link
                       href={`/quotations/${q.id}`}
-                      className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
                     >
                       {q.quotationNumber}
                     </Link>

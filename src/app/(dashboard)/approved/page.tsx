@@ -40,7 +40,7 @@ export default async function ApprovedPage() {
             ) : (
               quotations.map((q) => (
                 <tr key={q.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4"><Link href={`/quotations/${q.id}`} className="text-sm font-medium text-primary-600 hover:text-primary-800">{q.quotationNumber}</Link></td>
+                  <td className="px-6 py-4"><Link href={`/quotations/${q.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-800">{q.quotationNumber}</Link></td>
                   <td className="px-6 py-4"><p className="text-sm font-medium text-gray-900">{q.projectName}</p><p className="text-xs text-gray-500">{q.companyName}</p></td>
                   <td className="px-6 py-4"><div className="flex flex-wrap gap-1">{q.services.map((s, i) => (<span key={i} className="inline-flex rounded-md bg-green-50 px-2 py-0.5 text-xs text-green-700">{s.sectionTitle}</span>))}</div></td>
                   <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">${formatNumber(q.totalAmount)}</td>
