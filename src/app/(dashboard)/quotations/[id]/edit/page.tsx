@@ -358,13 +358,10 @@ export default function EditQuotationPage() {
 
               {service.terms.length > 0 && (
                 <div className="mt-4 border-t border-gray-100 pt-4">
-                  <h4 className="mb-2 text-sm font-medium text-gray-700">服務條款</h4>
-                  <div className="space-y-1">
+                  <h4 className="mb-2 text-sm font-medium text-gray-500">服務條款</h4>
+                  <div className="space-y-1 text-xs text-gray-500">
                     {service.terms.map((term, tIdx) => (
-                      <div key={tIdx} className="flex gap-2">
-                        <textarea value={term} onChange={(e) => { const newTerms = [...service.terms]; newTerms[tIdx] = e.target.value; setServices((prev) => prev.map((s, i) => (i === sIdx ? { ...s, terms: newTerms } : s))); }} rows={2} className="flex-1 rounded border border-gray-200 px-2 py-1.5 text-xs text-gray-600 focus:border-primary-500 focus:outline-none" />
-                        <button onClick={() => { const newTerms = service.terms.filter((_, j) => j !== tIdx); setServices((prev) => prev.map((s, i) => (i === sIdx ? { ...s, terms: newTerms } : s))); }} className="self-start rounded p-1 text-gray-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>
-                      </div>
+                      <p key={tIdx}>{term}</p>
                     ))}
                   </div>
                 </div>
