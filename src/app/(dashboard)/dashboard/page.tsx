@@ -62,7 +62,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">儀表板</h1>
           <p className="mt-1 text-sm text-gray-500">歡迎回來，{session.user.name}</p>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-xl border border-gray-200 bg-white p-5">
             <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
             <Users className="h-5 w-5 text-gray-500" />
             <h2 className="text-lg font-semibold text-gray-900">各業務報價單狀態</h2>
           </div>
-          <div className="overflow-hidden">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

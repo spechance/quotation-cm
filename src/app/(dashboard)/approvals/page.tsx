@@ -23,7 +23,7 @@ export default async function ApprovalsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">待審核報價單</h1>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

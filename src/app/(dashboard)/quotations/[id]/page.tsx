@@ -157,7 +157,7 @@ export default function QuotationDetailPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -182,7 +182,7 @@ export default function QuotationDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {canEdit && (
             <Link
               href={`/quotations/${quotation.id}/edit`}
@@ -252,7 +252,7 @@ export default function QuotationDetailPage() {
       {/* Client Info */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">客戶資訊</h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
             <span className="text-gray-500">專案名稱：</span>
             <span className="font-medium text-gray-900">
