@@ -127,8 +127,10 @@ model Quotation {
 
   notes String?
 
-  createdById String
-  createdBy   User @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById        String
+  createdBy          User    @relation("CreatedBy", fields: [createdById], references: [id])
+  originalCreatorName String? // 轉移前的原始業務姓名（刪除人員時記錄）
+  transferNote       String? // 轉移備註（如：「由 王小明 轉移至 李大華」）
 
   services       QuotationService[]
   approvals      ApprovalRecord[]

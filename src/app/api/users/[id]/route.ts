@@ -49,7 +49,7 @@ export async function PUT(
   return NextResponse.json(user);
 }
 
-// DELETE /api/users/[id] - Delete user
+// DELETE /api/users/[id]
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -65,12 +65,62 @@ export async function DELETE(
     return NextResponse.json({ error: "無法刪除自己的帳號" }, { status: 400 });
   }
 
-  // Check if user has quotations
-  const quotationCount = await prisma.quotation.count({ where: { createdById: id } });
-  if (quotationCount > 0) {
-    return NextResponse.json({ error: `此人員已建立 ${quotationCount} 筆報價單，無法刪除。請改用停用功能。` }, { status: 400 });
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    return NextResponse.json({ error: "找不到使用者" }, { status: 404 });
   }
 
+  // Check for pending/draft quotations (need transfer)
+  const pendingQuotations = await prisma.quotation.count({
+    where: { createdById: id, status: { in: ["DRAFT", "PENDING_APPROVAL"] } },
+  });
+  if (pendingQuotations > 0) {
+    return NextResponse.json({
+      error: "NEED_TRANSFER",
+      message: `此人員有 ${pendingQuotations} 筆未完成報價單（草稿/待審核），請先轉移至其他人員。`,
+      pendingCount: pendingQuotations,
+    }, { status: 400 });
+  }
+
+  // For completed quotations (APPROVED/REJECTED/CANCELLED), keep records
+  // Mark original creator name on all their quotations before deleting
+  const allQuotations = await prisma.quotation.findMany({
+    where: { createdById: id },
+    select: { id: true },
+  });
+
+  if (allQuotations.length > 0) {
+    // Need a transferTo user to reassign
+    const body = await req.json().catch(() => ({}));
+    const transferToId = body.transferToId;
+
+    if (!transferToId) {
+      return NextResponse.json({
+        error: "NEED_TRANSFER_COMPLETED",
+        message: `此人員有 ${allQuotations.length} 筆已完成報價單需留檔，請選擇接管人員。`,
+        completedCount: allQuotations.length,
+      }, { status: 400 });
+    }
+
+    const transferTo = await prisma.user.findUnique({ where: { id: transferToId } });
+    if (!transferTo) {
+      return NextResponse.json({ error: "接管人員不存在" }, { status: 400 });
+    }
+
+    // Transfer all quotations: record original creator, set new owner
+    await prisma.quotation.updateMany({
+      where: { createdById: id },
+      data: {
+        originalCreatorName: user.name,
+        transferNote: `由 ${user.name} 轉移至 ${transferTo.name}`,
+        createdById: transferToId,
+      },
+    });
+  }
+
+  // Delete related records then delete user
+  await prisma.templateVisibility.deleteMany({ where: { userId: id } });
+  await prisma.approvalRecord.deleteMany({ where: { userId: id } });
   await prisma.user.delete({ where: { id } });
 
   return NextResponse.json({ success: true });

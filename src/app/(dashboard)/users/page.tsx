@@ -20,6 +20,10 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [transferToId, setTransferToId] = useState("");
+  const [transferMessage, setTransferMessage] = useState("");
 
   async function fetchUsers() {
     const res = await fetch("/api/users");
@@ -273,10 +277,19 @@ export default function UsersPage() {
                       </button>
                       <button
                         onClick={async () => {
-                          if (!confirm(`確定要刪除 ${user.name}？此操作無法復原。`)) return;
+                          if (!confirm(`確定要刪除 ${user.name}？`)) return;
+                          // First try without transferToId
                           const res = await fetch(`/api/users/${user.id}`, { method: "DELETE" });
-                          if (res.ok) fetchUsers();
-                          else { const err = await res.json(); alert(err.error || "刪除失敗"); }
+                          if (res.ok) { fetchUsers(); return; }
+                          const err = await res.json();
+                          if (err.error === "NEED_TRANSFER" || err.error === "NEED_TRANSFER_COMPLETED") {
+                            setDeletingUser(user);
+                            setTransferMessage(err.message);
+                            setTransferToId("");
+                            setShowTransfer(true);
+                          } else {
+                            alert(err.message || err.error || "刪除失敗");
+                          }
                         }}
                         className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
                         title="刪除"
@@ -313,6 +326,54 @@ export default function UsersPage() {
             >
               關閉
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer & Delete Modal */}
+      {showTransfer && deletingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-2 text-lg font-semibold text-gray-900">刪除人員 - {deletingUser.name}</h2>
+            <div className="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">{transferMessage}</div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">將報價單轉移至</label>
+              <select
+                value={transferToId}
+                onChange={(e) => setTransferToId(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+              >
+                <option value="">請選擇接管人員</option>
+                {users.filter((u) => u.id !== deletingUser.id && u.active).map((u) => (
+                  <option key={u.id} value={u.id}>{u.name}（{ROLE_LABELS[u.role] || u.role}）</option>
+                ))}
+              </select>
+            </div>
+            <p className="mb-4 text-xs text-gray-500">轉移後，報價單將記錄「由 {deletingUser.name} 轉移至 (接管人員)」</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => { setShowTransfer(false); setDeletingUser(null); }} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">取消</button>
+              <button
+                disabled={!transferToId}
+                onClick={async () => {
+                  const res = await fetch(`/api/users/${deletingUser.id}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ transferToId }),
+                  });
+                  if (res.ok) {
+                    setShowTransfer(false);
+                    setDeletingUser(null);
+                    fetchUsers();
+                  } else {
+                    const err = await res.json();
+                    alert(err.message || err.error || "刪除失敗");
+                  }
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                確認轉移並刪除
+              </button>
+            </div>
           </div>
         </div>
       )}

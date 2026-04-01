@@ -78,6 +78,8 @@ CREATE TABLE "Quotation" (
     "uploadedFileName" TEXT,
     "notes" TEXT,
     "createdById" TEXT NOT NULL,
+    "originalCreatorName" TEXT,
+    "transferNote" TEXT,
     "quotationDate" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,

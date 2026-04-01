@@ -30,6 +30,8 @@ interface Quotation {
   companyTaxId: string;
   companyPhone: string;
   contactPhone: string;
+  originalCreatorName: string | null;
+  transferNote: string | null;
   subtotal: number;
   taxAmount: number;
   totalAmount: number;
@@ -300,6 +302,12 @@ export default function QuotationDetailPage() {
             </span>
           </div>
         </div>
+        {quotation.transferNote && (
+          <div className="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-700">
+            <span className="font-medium">轉移紀錄：</span>{quotation.transferNote}
+            {quotation.originalCreatorName && <span className="ml-2 text-xs text-yellow-500">（原業務：{quotation.originalCreatorName}）</span>}
+          </div>
+        )}
       </div>
 
       {/* Services */}
