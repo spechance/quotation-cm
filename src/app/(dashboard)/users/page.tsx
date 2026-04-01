@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, UserX, UserCheck } from "lucide-react";
+import { Plus, Pencil, UserX, UserCheck, Trash2 } from "lucide-react";
 import { ROLE_LABELS } from "@/lib/constants";
 
 interface User {
@@ -272,6 +272,18 @@ export default function UsersPage() {
                         ) : (
                           <UserCheck className="h-4 w-4" />
                         )}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`確定要刪除 ${user.name}？此操作無法復原。`)) return;
+                          const res = await fetch(`/api/users/${user.id}`, { method: "DELETE" });
+                          if (res.ok) fetchUsers();
+                          else { const err = await res.json(); alert(err.error || "刪除失敗"); }
+                        }}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        title="刪除"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
