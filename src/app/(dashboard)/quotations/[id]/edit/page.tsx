@@ -21,6 +21,7 @@ interface ItemForm {
   quantity: number;
   unit: string;
   unitPrice: number;
+  isCustom: boolean;
 }
 
 interface ServiceForm {
@@ -80,9 +81,10 @@ export default function EditQuotationPage() {
             itemNumber: i + 1,
             description: item.description || "",
             specification: item.specification || "",
-            quantity: item.quantity || 1,
+            quantity: item.quantity || 0,
             unit: item.unit || "",
             unitPrice: item.unitPrice || 0,
+            isCustom: item.isCustom || false,
           })),
         }))
       );
@@ -104,9 +106,10 @@ export default function EditQuotationPage() {
         itemNumber: itemIdx + 1,
         description: item.description,
         specification: item.specification || "",
-        quantity: 1,
+        quantity: 0,
         unit: item.unit || "",
         unitPrice: item.unitPrice || 0,
+        isCustom: false,
       })),
     }));
     setServices((prev) => {
@@ -131,7 +134,7 @@ export default function EditQuotationPage() {
     setServices((prev) =>
       prev.map((s, i) => {
         if (i !== serviceIndex) return s;
-        return { ...s, items: [...s.items, { itemNumber: s.items.length + 1, description: "", specification: "", quantity: 1, unit: "", unitPrice: 0 }] };
+        return { ...s, items: [...s.items, { itemNumber: s.items.length + 1, description: "", specification: "", quantity: 1, unit: "", unitPrice: 0, isCustom: true }] };
       })
     );
   }
@@ -193,6 +196,7 @@ export default function EditQuotationPage() {
           unitPrice: item.unitPrice,
           amount: item.quantity * item.unitPrice,
           sortOrder: itemIdx,
+          isCustom: item.isCustom,
         })),
       })),
     };
@@ -313,18 +317,41 @@ export default function EditQuotationPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {service.items.map((item, iIdx) => (
-                    <tr key={iIdx} className="border-b border-gray-100">
-                      <td className="px-2 py-2 text-sm text-gray-500">{item.itemNumber}</td>
-                      <td className="px-2 py-2"><input value={item.description} onChange={(e) => updateItem(sIdx, iIdx, "description", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" /></td>
-                      <td className="px-2 py-2"><input value={item.specification} onChange={(e) => updateItem(sIdx, iIdx, "specification", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" /></td>
-                      <td className="px-2 py-2"><input type="number" value={item.quantity} onChange={(e) => updateItem(sIdx, iIdx, "quantity", parseInt(e.target.value) || 0)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm text-right focus:border-primary-500 focus:outline-none" /></td>
-                      <td className="px-2 py-2"><input value={item.unit} onChange={(e) => updateItem(sIdx, iIdx, "unit", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" /></td>
-                      <td className="px-2 py-2"><input type="number" value={item.unitPrice} onChange={(e) => updateItem(sIdx, iIdx, "unitPrice", parseInt(e.target.value) || 0)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm text-right focus:border-primary-500 focus:outline-none" /></td>
-                      <td className="px-2 py-2 text-right text-sm font-medium text-gray-900">${formatNumber(item.quantity * item.unitPrice)}</td>
-                      <td className="px-2 py-2"><button onClick={() => removeItem(sIdx, iIdx)} className="rounded p-1 text-gray-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button></td>
-                    </tr>
-                  ))}
+                  {service.items.map((item, iIdx) => {
+                    const isTemplate = !item.isCustom;
+                    return (
+                      <tr key={iIdx} className={`border-b border-gray-100 ${item.isCustom ? "bg-blue-50" : ""}`}>
+                        <td className="px-2 py-2 text-sm text-gray-500">{item.itemNumber}</td>
+                        <td className="px-2 py-2">
+                          {isTemplate
+                            ? <span className="block px-2 py-1.5 text-sm text-gray-700">{item.description}</span>
+                            : <input value={item.description} onChange={(e) => updateItem(sIdx, iIdx, "description", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" />}
+                        </td>
+                        <td className="px-2 py-2">
+                          {isTemplate
+                            ? <span className="block px-2 py-1.5 text-sm text-gray-500">{item.specification || "-"}</span>
+                            : <input value={item.specification} onChange={(e) => updateItem(sIdx, iIdx, "specification", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" />}
+                        </td>
+                        <td className="px-2 py-2">
+                          <input type="number" value={item.quantity} onChange={(e) => updateItem(sIdx, iIdx, "quantity", parseInt(e.target.value) || 0)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm text-right focus:border-primary-500 focus:outline-none" />
+                        </td>
+                        <td className="px-2 py-2">
+                          {isTemplate
+                            ? <span className="block px-2 py-1.5 text-sm text-gray-500">{item.unit || "-"}</span>
+                            : <input value={item.unit} onChange={(e) => updateItem(sIdx, iIdx, "unit", e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none" />}
+                        </td>
+                        <td className="px-2 py-2">
+                          {isTemplate
+                            ? <span className="block px-2 py-1.5 text-sm text-right text-gray-700">${formatNumber(item.unitPrice)}</span>
+                            : <input type="number" value={item.unitPrice} onChange={(e) => updateItem(sIdx, iIdx, "unitPrice", parseInt(e.target.value) || 0)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm text-right focus:border-primary-500 focus:outline-none" />}
+                        </td>
+                        <td className="px-2 py-2 text-right text-sm font-medium text-gray-900">${formatNumber(item.quantity * item.unitPrice)}</td>
+                        <td className="px-2 py-2">
+                          {item.isCustom && <button onClick={() => removeItem(sIdx, iIdx)} className="rounded p-1 text-gray-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <button onClick={() => addItem(sIdx)} className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-800"><Plus className="h-4 w-4" />新增項目</button>
