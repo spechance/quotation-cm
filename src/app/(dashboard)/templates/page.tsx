@@ -189,8 +189,9 @@ export default function TemplatesPage() {
 
       {/* ── Templates Tab ── */}
       {tab === "templates" && (
-        <div className="space-y-3">
-          <p className="text-xs text-gray-400">拖曳左側圖示可調整版型順序</p>
+        <div>
+          <p className="mb-3 text-xs text-gray-400">拖曳圖示可調整版型順序</p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {loading ? <p className="text-sm text-gray-500">載入中...</p> : templates.map((t, tIdx) => (
             <div
               key={t.id}
@@ -224,6 +225,7 @@ export default function TemplatesPage() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 
