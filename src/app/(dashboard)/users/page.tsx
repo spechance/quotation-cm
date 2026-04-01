@@ -75,14 +75,12 @@ export default function UsersPage() {
   async function toggleActive(user: User) {
     if (user.active) {
       if (!confirm(`確定要停用 ${user.name} 的帳號？`)) return;
-      await fetch(`/api/users/${user.id}`, { method: "DELETE" });
-    } else {
-      await fetch(`/api/users/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active: true }),
-      });
     }
+    await fetch(`/api/users/${user.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: !user.active }),
+    });
     fetchUsers();
   }
 

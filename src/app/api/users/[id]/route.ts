@@ -49,7 +49,7 @@ export async function PUT(
   return NextResponse.json(user);
 }
 
-// DELETE /api/users/[id] - Deactivate
+// DELETE /api/users/[id] - Delete user
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,15 +61,17 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Prevent self-deactivation
   if (id === session.user.id) {
-    return NextResponse.json({ error: "無法停用自己的帳號" }, { status: 400 });
+    return NextResponse.json({ error: "無法刪除自己的帳號" }, { status: 400 });
   }
 
-  await prisma.user.update({
-    where: { id },
-    data: { active: false },
-  });
+  // Check if user has quotations
+  const quotationCount = await prisma.quotation.count({ where: { createdById: id } });
+  if (quotationCount > 0) {
+    return NextResponse.json({ error: `此人員已建立 ${quotationCount} 筆報價單，無法刪除。請改用停用功能。` }, { status: 400 });
+  }
+
+  await prisma.user.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }
