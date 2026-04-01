@@ -1,0 +1,38 @@
+# 生產環境 - Hostinger VPS
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-quotation}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme_strong_password}
+      POSTGRES_DB: ${DB_NAME:-quotation_system}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-quotation}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: always
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-quotation}:${DB_PASSWORD:-changeme_strong_password}@db:5432/${DB_NAME:-quotation_system}
+      AUTH_SECRET: ${AUTH_SECRET:-generate_a_random_secret_here}
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_TRUST_HOST: "true"
+    volumes:
+      - uploads:/app/uploads
+      - public_assets:/app/public
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  uploads:
+  public_assets:
